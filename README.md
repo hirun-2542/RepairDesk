@@ -8,6 +8,8 @@
 
 ต้องใช้ Node.js 24 และ npm; SQLite ไม่ต้องมี database server
 
+ใน workspace นี้ติดตั้งและ seed ไว้แล้ว รัน `npm run dev` ได้ทันที; ชุดคำสั่งด้านล่างสำหรับ workspace ใหม่ หรือฐานข้อมูลใหม่ที่ยังว่างเท่านั้น
+
 ```bash
 npm install
 cp -n .env.example .env
@@ -27,7 +29,7 @@ npm run dev
 | `tech1@demo.local`     | ช่างเอ      |
 | `tech2@demo.local`     | ช่างบี      |
 
-`.env` ของเครื่องนี้มี secret ที่สุ่มไว้แล้ว ไม่ต้องสร้างซ้ำ; `.env.example` มีค่าแทนที่ซึ่ง **ไม่ควรใช้เป็น secret จริง** `DATABASE_URL="file:./dev.db"` และ `UPLOAD_DIR="./uploads"` อ้างอิงจากรากโปรเจกต์
+`.env` ของ workspace นี้มี secret ที่สุ่มไว้แล้ว และใช้ `repair-final.db` / `uploads-final` เพื่อเก็บข้อมูล demo หลังแก้ไข โดยไม่ลบ `dev.db` หรือ `repair-demo.db` เดิม ส่วน `.env.example` มีค่าตั้งต้น `DATABASE_URL="file:./dev.db"` และ `UPLOAD_DIR="./uploads"` อ้างอิงจากรากโปรเจกต์ พร้อมค่า secret แทนที่ซึ่ง **ไม่ควรใช้เป็น secret จริง**
 
 ### เริ่มข้อมูล demo ใหม่
 
@@ -92,3 +94,14 @@ npm start         # รัน production build หลัง build สำเร�
 - `.scratch/repair-management/` — spec, execution plan และ local ticket tracker; ticket ที่อนุมัติแก้ข้อขัดแย้งใน plan (เมนูซ้าย, guard disabled + เหตุผล, ซ่อนสลิปจากลูกค้า)
 
 ระบบนี้สำหรับ demo ในเครื่องร้านเดียว ไม่ใช่ production deployment: ไม่มี payment gateway, notifications, multi-tenant, สต็อกอะไหล่, นัดหมายซ่อมนอกสถานที่, การชำระบางส่วน หรือ customer accounts
+
+## หลักฐานการตรวจ integration branch
+
+- `npm test`: 125 tests ผ่าน (4 ไฟล์ pure domain รวม date-boundary filters)
+- `npm run e2e`: 14 tests ผ่านสองรอบติดต่อกันบน Chromium; ฐานข้อมูลและ uploads อยู่ใน temp directory ใหม่ทุกครั้ง และ teardown ยืนยันว่าฐานข้อมูลในโปรเจกต์ไม่เปลี่ยน
+- `npx tsc --noEmit` และ `npm run build`: ผ่าน
+- Code review (Standards / Spec / Visual) และ scoped re-verification: findings ที่พบได้รับการแก้ไข
+- ภาพแอปจริง desktop/mobile 46 ภาพ: `.scratch/repair-management/evidence/ui-final/`
+- รายละเอียดคำสั่ง ผล ขอบเขต และข้อจำกัด: `.scratch/repair-management/evidence/verification.json`
+
+ยังไม่ได้ทดสอบ Firefox, Safari, อุปกรณ์จริง หรือ screen reader; ทดสอบ PDF จาก browser print แต่ไม่ได้ใช้เครื่องพิมพ์จริง Build มี warnings เกี่ยวกับ dynamic filesystem tracing ของ uploads และ package-lock ภายนอกรากโปรเจกต์ ไม่ใช่ build failure และเป้าหมายยังเป็น demo ในเครื่องตาม spec

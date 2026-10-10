@@ -9,6 +9,7 @@ src/generated/
 uploads/
 uploads-e2e/
 uploads-demo/
+uploads-final/
 test-results/
 playwright-report/
 .worktrees/
