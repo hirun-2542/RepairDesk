@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
-import type { Prisma } from "@/generated/prisma/client";
 import type { Role } from "@/generated/prisma/enums";
+import type { Actor } from "@/domain/types";
 import { prisma } from "@/lib/db";
-import { writeAudit, type AuditActor } from "./audit";
+import { requireActor } from "./authorization";
+import { writeAudit } from "./audit";
 import { DomainError } from "./errors";
 
 const ROLES: readonly Role[] = ["ADMIN", "FRONT_DESK", "TECHNICIAN"];
@@ -44,24 +45,8 @@ const publicSelect = {
   active: true,
 } as const;
 
-/**
- * Admin authorization is resolved from the current database row — never from the
- * caller-supplied actor snapshot — so a deactivated or demoted admin is rejected
- * immediately, even with a still-valid JWT session.
- */
-async function loadAdmin(tx: Prisma.TransactionClient, actor: AuditActor) {
-  if (actor.kind !== "USER") throw new DomainError(USER_ERRORS.forbidden);
-  const fresh = await tx.user.findUnique({
-    where: { id: actor.id },
-    select: { id: true, name: true, role: true, active: true },
-  });
-  if (!fresh || !fresh.active || fresh.role !== "ADMIN")
-    throw new DomainError(USER_ERRORS.forbidden);
-  return fresh;
-}
-
 export async function createUser(
-  actor: AuditActor,
+  actor: Actor,
   input: UserInput,
 ): Promise<PublicUser> {
   const name = typeof input.name === "string" ? input.name.trim() : "";
@@ -76,7 +61,7 @@ export async function createUser(
   if (!ROLES.includes(role)) throw new DomainError(USER_ERRORS.roleInvalid);
 
   return prisma.$transaction(async (tx) => {
-    const admin = await loadAdmin(tx, actor);
+    const admin = await requireActor(tx, actor, ["ADMIN"]);
     if (await tx.user.findUnique({ where: { email }, select: { id: true } }))
       throw new DomainError(USER_ERRORS.emailTaken);
 
@@ -86,7 +71,7 @@ export async function createUser(
       select: publicSelect,
     });
     await writeAudit(tx, {
-      actor: { kind: "USER", id: admin.id, name: admin.name, role: admin.role },
+      actor: admin,
       action: "user.create",
       entityType: "User",
       entityId: user.id,
@@ -102,7 +87,7 @@ export async function createUser(
 }
 
 export async function updateUser(
-  actor: AuditActor,
+  actor: Actor,
   id: string,
   patch: UpdateUserPatch,
 ): Promise<PublicUser> {
@@ -112,7 +97,7 @@ export async function updateUser(
     throw new DomainError(USER_ERRORS.activeInvalid);
 
   return prisma.$transaction(async (tx) => {
-    const admin = await loadAdmin(tx, actor);
+    const admin = await requireActor(tx, actor, ["ADMIN"]);
     const target = await tx.user.findUnique({
       where: { id },
       select: publicSelect,
@@ -141,7 +126,7 @@ export async function updateUser(
       select: publicSelect,
     });
     await writeAudit(tx, {
-      actor: { kind: "USER", id: admin.id, name: admin.name, role: admin.role },
+      actor: admin,
       action: "user.update",
       entityType: "User",
       entityId: user.id,

@@ -22,12 +22,6 @@ export function getJobDetail(id: string) {
     include: jobDetailInclude,
   });
 }
-export function getJobByToken(trackingToken: string) {
-  return prisma.repairJob.findUnique({
-    where: { trackingToken },
-    include: jobDetailInclude,
-  });
-}
 export const intakeSchema = z.object({
   phone: z
     .string()

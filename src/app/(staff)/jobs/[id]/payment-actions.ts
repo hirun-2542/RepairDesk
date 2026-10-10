@@ -13,7 +13,7 @@ export async function completeAction(
   revision: number,
   input: PaymentInput,
 ) {
-  const user = await requireUser(["ADMIN", "FRONT_DESK"]);
+  const user = await requireUser();
   try {
     await completeJob(toActor(user), id, input, revision);
     revalidatePath("/jobs", "layout");
@@ -30,7 +30,7 @@ export async function cancelAction(
   revision: number,
   input: CancelInput,
 ) {
-  const user = await requireUser(["ADMIN", "FRONT_DESK"]);
+  const user = await requireUser();
   try {
     await cancelJob(toActor(user), id, input, revision);
     revalidatePath("/jobs", "layout");

@@ -1507,6 +1507,9 @@ tbody tr:last-child td {
   }
   .app {
     grid-template-columns: minmax(0, 1fr);
+    /* Explicit rows keep the top bar at content height; without this the auto rows
+       stretch and the mobile topbar grows to fill short pages. */
+    grid-template-rows: auto 1fr;
   }
   .sidebar,
   .has-dock .sidebar {

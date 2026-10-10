@@ -8,7 +8,7 @@ export async function assignAction(
   technicianId: string,
   revision: number,
 ) {
-  const user = await requireUser(["ADMIN", "FRONT_DESK"]);
+  const user = await requireUser();
   try {
     await assignTechnician(toActor(user), jobId, technicianId, revision);
     revalidatePath("/jobs", "layout");

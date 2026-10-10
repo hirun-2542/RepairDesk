@@ -74,15 +74,17 @@ export async function saveUpload(file: File): Promise<SavedUpload> {
   return { storedName, mimeType, size: bytes.length, fileName: file.name };
 }
 
-/** Reads stored bytes by disk name. Returns null for missing files or unsafe names. */
+/** Reads stored bytes by disk name. Returns null for unsafe names or a missing file. */
 export async function readUpload(storedName: string): Promise<Buffer | null> {
   if (!SAFE_STORED_NAME.test(storedName)) return null;
   try {
     return await readFile(
       path.join(process.env.UPLOAD_DIR ?? "./uploads", storedName),
     );
-  } catch {
-    return null;
+  } catch (error) {
+    // Only a genuinely absent file means "missing"; permission/IO problems must surface.
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
   }
 }
 
@@ -91,7 +93,13 @@ export async function deleteUpload(storedName: string): Promise<void> {
   if (!SAFE_STORED_NAME.test(storedName)) return;
   try {
     await unlink(path.join(process.env.UPLOAD_DIR ?? "./uploads", storedName));
-  } catch {
-    /* already gone */
+  } catch (error) {
+    // The original mutation error is what the caller sees; log anything beyond "already
+    // gone" instead of silently swallowing a real filesystem problem.
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT")
+      console.error(
+        `Failed to remove upload ${storedName} during rollback`,
+        error,
+      );
   }
 }

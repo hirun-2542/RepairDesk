@@ -1,13 +1,10 @@
 import type { Prisma } from "@/generated/prisma/client";
-export type AuditActor =
-  | { kind: "USER"; id: string; name: string; role: string }
-  | { kind: "CUSTOMER" }
-  | { kind: "ANONYMOUS"; label: string };
-const roleLabels: Record<string, string> = {
-  ADMIN: "ผู้ดูแลระบบ",
-  FRONT_DESK: "หน้าร้าน",
-  TECHNICIAN: "ช่าง",
-};
+import { ROLE_LABEL } from "@/domain/labels";
+import type { Actor } from "@/domain/types";
+
+/** A staff/customer actor, plus the unauthenticated failed-login shape. */
+export type AuditActor = Actor | { kind: "ANONYMOUS"; label: string };
+
 export async function writeAudit(
   tx: Prisma.TransactionClient,
   entry: {
@@ -28,7 +25,7 @@ export async function writeAudit(
       actorId: actor.kind === "USER" ? actor.id : null,
       actorLabel:
         actor.kind === "USER"
-          ? actor.name + " (" + roleLabels[actor.role] + ")"
+          ? actor.name + " (" + ROLE_LABEL[actor.role] + ")"
           : actor.kind === "CUSTOMER"
             ? "ลูกค้า (ลิงก์ติดตามงาน)"
             : actor.label,
