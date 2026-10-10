@@ -1,0 +1,36 @@
+generator client {
+ provider = "prisma-client"
+ output = "../src/generated/prisma"
+}
+datasource db {
+ provider = "sqlite"
+}
+enum Role {
+ ADMIN
+ FRONT_DESK
+ TECHNICIAN
+}
+model User {
+ id String @id @default(cuid())
+ email String @unique
+ name String
+ passwordHash String
+ role Role
+ active Boolean @default(true)
+ createdAt DateTime @default(now())
+}
+model AuditLog {
+ id String @id @default(cuid())
+ at DateTime @default(now())
+ actorType String
+ actorId String?
+ actorLabel String
+ action String
+ entityType String
+ entityId String
+ jobId String?
+ before String?
+ after String?
+ @@index([jobId])
+ @@index([at])
+}
