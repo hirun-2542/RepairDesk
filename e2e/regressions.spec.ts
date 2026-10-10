@@ -73,9 +73,12 @@ test("งานที่ถูกยกเลิก: หน้าลูกค้
   const anon = await anonContext.newPage();
 
   try {
-    // Seeded job 12 was diagnosed and quoted before the customer refused and it was cancelled.
-    await front.page.goto("/jobs/list?status=CANCELLED");
-    await front.page.locator("tbody tr a.mono").first().click();
+    // Seeded job 12 (Xiaomi Redmi Note 12) was created, diagnosed and quoted before the
+    // customer refused and it was cancelled — the only cancelled job with that history.
+    await front.page.goto("/jobs/list?status=CANCELLED&q=Redmi%20Note%2012");
+    const cancelledRows = front.page.locator("tbody tr");
+    await expect(cancelledRows).toHaveCount(1);
+    await cancelledRows.first().locator("a.mono").click();
     await expectJobDetail(front.page);
     await expectStatus(front.page, "CANCELLED");
     const trackUrl = await readTrackingUrl(front.page);
