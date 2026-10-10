@@ -1,0 +1,15 @@
+node_modules/
+.next/
+src/generated/
+.env
+.env.local
+*.db
+*.db-*
+*.db-journal
+uploads/
+uploads-e2e/
+test-results/
+playwright-report/
+.worktrees/
+.omp/
+.superpowers/

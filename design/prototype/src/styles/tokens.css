@@ -1,0 +1,39 @@
+:root {
+  /* Brand / neutral */
+  --navy-900: #0f172a; --navy-800: #1e293b; --navy-700: #334155;
+  --slate-600: #475569; --slate-500: #64748b; --slate-300: #cbd5e1; --slate-200: #e2e8f0; --slate-100: #f1f5f9; --slate-50: #f8fafc;
+  --accent: #0369a1; --accent-hover: #075985; --accent-soft: #e0f2fe; --on-accent: #fff;
+  --danger: #b91c1c; --danger-hover: #991b1b; --danger-soft: #fee2e2;
+  --success: #166534; --success-soft: #dcfce7;
+  --warning: #92400e; --warning-soft: #fef3c7;
+
+  /* Semantic */
+  --bg: var(--slate-50); --surface: #fff; --surface-muted: var(--slate-100);
+  --border: var(--slate-200); --border-strong: var(--slate-300);
+  --fg: #0f172a; --fg-muted: var(--slate-600); --ring: var(--accent);
+
+  /* Status tones: bg / fg (>= 4.5:1) / dot */
+  --st-received-bg: #f1f5f9;  --st-received-fg: #334155;  --st-received-dot: #64748b;
+  --st-diagnosing-bg: #e0f2fe; --st-diagnosing-fg: #075985; --st-diagnosing-dot: #0284c7;
+  --st-quoted-bg: #fef3c7;     --st-quoted-fg: #92400e;     --st-quoted-dot: #d97706;
+  --st-approved-bg: #ccfbf1;   --st-approved-fg: #115e59;   --st-approved-dot: #0d9488;
+  --st-repairing-bg: #ffedd5;  --st-repairing-fg: #9a3412;  --st-repairing-dot: #ea580c;
+  --st-ready-bg: #e0e7ff;      --st-ready-fg: #3730a3;      --st-ready-dot: #4f46e5;
+  --st-completed-bg: #dcfce7;  --st-completed-fg: #166534;  --st-completed-dot: #16a34a;
+  --st-cancelled-bg: #fee2e2;  --st-cancelled-fg: #991b1b;  --st-cancelled-dot: #dc2626;
+
+  /* Type */
+  --font: "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+  --fs-xs: 12px; --fs-sm: 14px; --fs-md: 16px; --fs-lg: 20px; --fs-xl: 24px; --fs-2xl: 30px;
+  --lh: 1.6;
+
+  /* Space (4px) / radius / shadow / motion */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px; --s10: 40px; --s12: 48px;
+  --r-sm: 6px; --r-md: 8px; --r-lg: 12px; --r-full: 999px;
+  --shadow-1: 0 1px 2px rgb(15 23 42 / 6%), 0 1px 1px rgb(15 23 42 / 4%);
+  --shadow-2: 0 4px 12px rgb(15 23 42 / 10%);
+  --shadow-3: 0 12px 32px rgb(15 23 42 / 20%);
+  --t-fast: 150ms; --t-base: 220ms; --ease: cubic-bezier(.2, .8, .2, 1);
+  --touch: 44px;
+}
+@media (prefers-reduced-motion: reduce) { * { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
