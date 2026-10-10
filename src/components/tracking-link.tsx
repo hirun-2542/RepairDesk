@@ -26,7 +26,7 @@ export function TrackingLink({ token }: { token: string }) {
   }
 
   return (
-    <div className="row" style={{ gap: 8 }}>
+    <div className="row wrap" style={{ gap: 8 }}>
       <input
         ref={inputRef}
         data-testid="tracking-link"
@@ -35,7 +35,7 @@ export function TrackingLink({ token }: { token: string }) {
         readOnly
         value={url}
         onFocus={(event) => event.currentTarget.select()}
-        style={{ width: "min(300px, 42vw)", fontSize: 12 }}
+        style={{ flex: "1 1 180px", minWidth: 0, maxWidth: 300, fontSize: 12 }}
       />
       <button type="button" className="btn btn-secondary" onClick={copy}>
         <Copy size={16} aria-hidden />คัดลอกลิงก์ติดตามงาน

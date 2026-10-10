@@ -12,13 +12,14 @@ import {JobActions} from "@/components/job-actions";
 import {QuoteView} from "@/components/quote-view";
 import {AuditTimeline} from "@/components/audit-timeline";
 import {Attachments} from "@/components/attachments";
+import {TrackingLink} from "@/components/tracking-link";
 export default async function Job({params}:{params:Promise<{id:string}>}) {
  const user=await requireUser(); const {id}=await params; const job=await getJobDetail(id);
  if(!job||!canViewJob(user,job))notFound();
  const technicians=await prisma.user.findMany({where:{role:"TECHNICIAN",active:true},select:{id:true,name:true}});
  const entries=await prisma.auditLog.findMany({where:{jobId:id},orderBy:{at:"desc"}});
  return <div className="page">
-  <div className="page-head"><div><p className="crumbs"><Link href="/jobs">กระดานงาน</Link> / {job.jobNo}</p><h1>{job.jobNo}</h1><StatusBadge status={job.status}/><p className="muted">{CATEGORY_LABEL[job.category]} · {job.brand} {job.model} · รับเมื่อ {formatDate(job.createdAt)}</p></div><Link className="btn btn-secondary" href={"/jobs/"+id+"/receipt"}>พิมพ์ใบรับงาน/ใบเสร็จ</Link></div>
+  <div className="page-head"><div><p className="crumbs"><Link href="/jobs">กระดานงาน</Link> / {job.jobNo}</p><h1>{job.jobNo}</h1><StatusBadge status={job.status}/><p className="muted">{CATEGORY_LABEL[job.category]} · {job.brand} {job.model} · รับเมื่อ {formatDate(job.createdAt)}</p></div><div className="stack-sm"><TrackingLink token={job.trackingToken}/><Link className="btn btn-secondary" href={"/jobs/"+id+"/receipt"}>พิมพ์ใบรับงาน/ใบเสร็จ</Link></div></div>
   {job.status==="CANCELLED"?<p className="banner banner-error">งานนี้ถูกยกเลิก — {job.cancelReason}</p>:<div className="card card-pad"><Stepper status={job.status}/></div>}
   <div className="detail" style={{marginTop:20}}>
    <div className="stack">
