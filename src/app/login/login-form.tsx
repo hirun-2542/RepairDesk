@@ -1,4 +1,65 @@
 "use client";
-import {useActionState} from "react";
-import {loginAction} from "./actions";
-export function LoginForm({inactive}:{inactive:boolean}){const [state,action,pending]=useActionState(loginAction,null);return <section className="login-card stack"><div><h1>เข้าสู่ระบบ</h1><p className="muted">สำหรับพนักงานร้านเท่านั้น</p></div>{inactive&&<p role="alert" className="banner banner-warn">บัญชีของคุณถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ</p>}{state?.error&&<p role="alert" className="banner banner-error">{state.error}</p>}<form action={action} className="stack"><label htmlFor="email">อีเมล</label><input id="email" name="email" className="input" type="email" autoComplete="username" required/><label htmlFor="password">รหัสผ่าน</label><input id="password" name="password" className="input" type="password" autoComplete="current-password" required/><button className="btn btn-primary" disabled={pending}>{pending?"กำลังเข้าสู่ระบบ…":"เข้าสู่ระบบ"}</button></form><h3>เข้าสู่ระบบแบบ Demo</h3><div className="grid-2">{[["admin","ผู้ดูแลระบบ"],["frontdesk","หน้าร้าน"],["tech1","ช่าง 1"],["tech2","ช่าง 2"]].map(([key,label])=><form action={action} key={key}><input type="hidden" name="email" value={key+"@demo.local"}/><input type="hidden" name="password" value="demo1234"/><button className="btn btn-secondary btn-block" disabled={pending}>{label}</button></form>)}</div><p className="small muted">รหัสผ่าน demo ทุกบัญชี: demo1234</p></section>;}
+import { useActionState } from "react";
+import { loginAction } from "./actions";
+export function LoginForm({ inactive }: { inactive: boolean }) {
+  const [state, action, pending] = useActionState(loginAction, null);
+  return (
+    <section className="login-card stack">
+      <div>
+        <h1>เข้าสู่ระบบ</h1>
+        <p className="muted">สำหรับพนักงานร้านเท่านั้น</p>
+      </div>
+      {inactive && (
+        <p role="alert" className="banner banner-warn">
+          บัญชีของคุณถูกปิดใช้งาน กรุณาติดต่อผู้ดูแลระบบ
+        </p>
+      )}
+      {state?.error && (
+        <p role="alert" className="banner banner-error">
+          {state.error}
+        </p>
+      )}
+      <form action={action} className="stack">
+        <label htmlFor="email">อีเมล</label>
+        <input
+          id="email"
+          name="email"
+          className="input"
+          type="email"
+          autoComplete="username"
+          required
+        />
+        <label htmlFor="password">รหัสผ่าน</label>
+        <input
+          id="password"
+          name="password"
+          className="input"
+          type="password"
+          autoComplete="current-password"
+          required
+        />
+        <button className="btn btn-primary" disabled={pending}>
+          {pending ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
+        </button>
+      </form>
+      <h3>เข้าสู่ระบบแบบ Demo</h3>
+      <div className="grid-2">
+        {[
+          ["admin", "ผู้ดูแลระบบ"],
+          ["frontdesk", "หน้าร้าน"],
+          ["tech1", "ช่าง 1"],
+          ["tech2", "ช่าง 2"],
+        ].map(([key, label]) => (
+          <form action={action} key={key}>
+            <input type="hidden" name="email" value={key + "@demo.local"} />
+            <input type="hidden" name="password" value="demo1234" />
+            <button className="btn btn-secondary btn-block" disabled={pending}>
+              {label}
+            </button>
+          </form>
+        ))}
+      </div>
+      <p className="small muted">รหัสผ่าน demo ทุกบัญชี: demo1234</p>
+    </section>
+  );
+}

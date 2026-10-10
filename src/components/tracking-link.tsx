@@ -17,7 +17,9 @@ export function TrackingLink({ token }: { token: string }) {
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}/track/${token}`);
+      await navigator.clipboard.writeText(
+        `${window.location.origin}/track/${token}`,
+      );
       toast.success("คัดลอกลิงก์ติดตามงานแล้ว");
     } catch {
       inputRef.current?.select();
@@ -38,7 +40,8 @@ export function TrackingLink({ token }: { token: string }) {
         style={{ flex: "1 1 180px", minWidth: 0, maxWidth: 300, fontSize: 12 }}
       />
       <button type="button" className="btn btn-secondary" onClick={copy}>
-        <Copy size={16} aria-hidden />คัดลอกลิงก์ติดตามงาน
+        <Copy size={16} aria-hidden />
+        คัดลอกลิงก์ติดตามงาน
       </button>
     </div>
   );

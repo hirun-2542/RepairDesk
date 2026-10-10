@@ -20,7 +20,9 @@ export const AUDIT_ACTIONS: AuditAction[] = [
   "attachment.upload",
 ];
 
-export function isAuditAction(value: string | undefined | null): value is AuditAction {
+export function isAuditAction(
+  value: string | undefined | null,
+): value is AuditAction {
   return !!value && (AUDIT_ACTIONS as string[]).includes(value);
 }
 
@@ -34,14 +36,22 @@ const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})$/;
  * `endOfDay` yields 23:59:59.999 on that day, otherwise 00:00:00.000.
  * Anything that is not a real calendar date (wrong shape, month 13, Feb 30) → undefined.
  */
-export function parseBangkokDate(value: string | undefined, endOfDay: boolean): Date | undefined {
+export function parseBangkokDate(
+  value: string | undefined,
+  endOfDay: boolean,
+): Date | undefined {
   const match = value ? DATE_ONLY.exec(value.trim()) : null;
   if (!match) return undefined;
   const year = Number(match[1]);
   const month = Number(match[2]);
   const day = Number(match[3]);
   const probe = new Date(Date.UTC(year, month - 1, day));
-  if (probe.getUTCFullYear() !== year || probe.getUTCMonth() !== month - 1 || probe.getUTCDate() !== day) return undefined;
+  if (
+    probe.getUTCFullYear() !== year ||
+    probe.getUTCMonth() !== month - 1 ||
+    probe.getUTCDate() !== day
+  )
+    return undefined;
   const wallClock = endOfDay
     ? Date.UTC(year, month - 1, day, 23, 59, 59, 999)
     : Date.UTC(year, month - 1, day, 0, 0, 0, 0);
@@ -73,7 +83,9 @@ export type AuditSearchParams = {
 export function parseAuditFilter(searchParams: AuditSearchParams): AuditFilter {
   const page = Number.parseInt(searchParams.page ?? "", 10);
   return {
-    action: isAuditAction(searchParams.action) ? searchParams.action : undefined,
+    action: isAuditAction(searchParams.action)
+      ? searchParams.action
+      : undefined,
     actor: searchParams.actor?.trim() ?? "",
     jobNo: searchParams.jobNo?.trim() ?? "",
     from: parseBangkokDate(searchParams.from, false),
@@ -94,7 +106,10 @@ export type AuditWhere = {
  * A Job Number that does not resolve to an existing job returns `null` so the
  * caller shows an empty result instead of the whole log.
  */
-export function buildAuditWhere(filter: AuditFilter, resolvedJobId: string | undefined): AuditWhere | null {
+export function buildAuditWhere(
+  filter: AuditFilter,
+  resolvedJobId: string | undefined,
+): AuditWhere | null {
   if (filter.jobNo && !resolvedJobId) return null;
   const at: { gte?: Date; lte?: Date } = {};
   if (filter.from) at.gte = filter.from;

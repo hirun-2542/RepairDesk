@@ -7,11 +7,19 @@ export default function TrackNotFound() {
     <div className="track">
       <TrackHeader />
       <main className="stack" style={{ padding: "0 0 16px" }}>
-        <div className="card card-pad stack track-card" style={{ textAlign: "center", alignItems: "center", padding: 32 }}>
-          <Link2Off size={40} aria-hidden style={{ color: "var(--slate-500)" }} />
+        <div
+          className="card card-pad stack track-card"
+          style={{ textAlign: "center", alignItems: "center", padding: 32 }}
+        >
+          <Link2Off
+            size={40}
+            aria-hidden
+            style={{ color: "var(--slate-500)" }}
+          />
           <h1 style={{ fontSize: 20 }}>ไม่พบลิงก์ติดตามงาน</h1>
           <p className="muted small">
-            ลิงก์อาจไม่ถูกต้องหรือพิมพ์ผิด กรุณาตรวจสอบจากใบรับงาน หรือติดต่อร้านโดยแจ้งเลขที่งาน
+            ลิงก์อาจไม่ถูกต้องหรือพิมพ์ผิด กรุณาตรวจสอบจากใบรับงาน
+            หรือติดต่อร้านโดยแจ้งเลขที่งาน
           </p>
         </div>
       </main>

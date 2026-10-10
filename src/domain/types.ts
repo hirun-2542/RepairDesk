@@ -22,7 +22,12 @@ export type PaymentMethod = "CASH" | "TRANSFER" | "CARD";
 
 export type PaymentKind = "REPAIR" | "INSPECTION_FEE";
 
-export type AttachmentStage = "INTAKE" | "DIAGNOSIS" | "BEFORE" | "AFTER" | "PAYMENT_SLIP";
+export type AttachmentStage =
+  | "INTAKE"
+  | "DIAGNOSIS"
+  | "BEFORE"
+  | "AFTER"
+  | "PAYMENT_SLIP";
 
 export type Actor =
   | { kind: "USER"; id: string; role: Role; name: string }

@@ -1,3 +1,62 @@
-import {AUDIT_LABEL} from "@/domain/labels";
-import {formatDate} from "@/components/job-ui";
-export function AuditTimeline({entries}:{entries:{id:string;at:Date;actorLabel:string;action:string;before:string|null;after:string|null}[]}){return <section className="card"><div className="card-head"><h3>ประวัติการดำเนินการ (Audit)</h3><span>{entries.length}</span></div><ol className="timeline card-pad">{entries.map(entry=>{const after=entry.after?JSON.parse(entry.after):null;return <li className="tl" key={entry.id}><span className="pt">•</span><div><h4>{AUDIT_LABEL[entry.action as keyof typeof AUDIT_LABEL]??entry.action} {after?.onBehalfOfCustomer&&<span className="tag">แทนลูกค้า</span>}</h4><p className="small muted">{entry.actorLabel} · {formatDate(entry.at)}</p>{(entry.before||entry.after)&&<details><summary>ดูรายละเอียด</summary><pre className="json">{JSON.stringify({before:entry.before?JSON.parse(entry.before):null,after},null,2)}</pre></details>}</div></li>;})}</ol></section>;}
+import { AUDIT_LABEL } from "@/domain/labels";
+import { formatDate } from "@/components/job-ui";
+export function AuditTimeline({
+  entries,
+}: {
+  entries: {
+    id: string;
+    at: Date;
+    actorLabel: string;
+    action: string;
+    before: string | null;
+    after: string | null;
+  }[];
+}) {
+  return (
+    <section className="card">
+      <div className="card-head">
+        <h3>ประวัติการดำเนินการ (Audit)</h3>
+        <span>{entries.length}</span>
+      </div>
+      <ol className="timeline card-pad">
+        {entries.map((entry) => {
+          const after = entry.after ? JSON.parse(entry.after) : null;
+          return (
+            <li className="tl" key={entry.id}>
+              <span className="pt">•</span>
+              <div>
+                <h4>
+                  {AUDIT_LABEL[entry.action as keyof typeof AUDIT_LABEL] ??
+                    entry.action}{" "}
+                  {after?.onBehalfOfCustomer && (
+                    <span className="tag">แทนลูกค้า</span>
+                  )}
+                </h4>
+                <p className="small muted">
+                  {entry.actorLabel} · {formatDate(entry.at)}
+                </p>
+                {(entry.before || entry.after) && (
+                  <details>
+                    <summary>ดูรายละเอียด</summary>
+                    <pre className="json">
+                      {JSON.stringify(
+                        {
+                          before: entry.before
+                            ? JSON.parse(entry.before)
+                            : null,
+                          after,
+                        },
+                        null,
+                        2,
+                      )}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}

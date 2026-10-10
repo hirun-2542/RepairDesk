@@ -32,18 +32,34 @@ function Thumb({ attachment }: { attachment: AttachmentView }) {
           target="_blank"
           rel="noreferrer"
           aria-label={`เปิดไฟล์ PDF ${attachment.fileName}`}
-          style={{ display: "grid", placeItems: "center", height: 76, color: "var(--fg-muted)" }}
+          style={{
+            display: "grid",
+            placeItems: "center",
+            height: 76,
+            color: "var(--fg-muted)",
+          }}
         >
           <FileText size={28} aria-hidden />
         </a>
       ) : (
         <a href={href} target="_blank" rel="noreferrer">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={href} alt={attachment.fileName} style={{ display: "block", width: "100%", height: 76, objectFit: "cover" }} />
+          <img
+            src={href}
+            alt={attachment.fileName}
+            style={{
+              display: "block",
+              width: "100%",
+              height: 76,
+              objectFit: "cover",
+            }}
+          />
         </a>
       )}
       <figcaption className="cap">
-        <span className="strong" style={{ color: "var(--fg)" }}>{STAGE_LABEL[attachment.stage]}</span>
+        <span className="strong" style={{ color: "var(--fg)" }}>
+          {STAGE_LABEL[attachment.stage]}
+        </span>
         <br />
         {attachment.fileName} · {formatSize(attachment.size)}
       </figcaption>
@@ -78,7 +94,8 @@ export function Attachments({
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `/api/jobs/${jobId}/attachments`);
     xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) setProgress(Math.round((event.loaded / event.total) * 100));
+      if (event.lengthComputable)
+        setProgress(Math.round((event.loaded / event.total) * 100));
     };
     xhr.onload = () => {
       setBusy(false);
@@ -122,7 +139,9 @@ export function Attachments({
             if (files.length === 0) return null;
             return (
               <div key={stageKey}>
-                <div className="label" style={{ marginBottom: 6 }}>{STAGE_LABEL[stageKey]}</div>
+                <div className="label" style={{ marginBottom: 6 }}>
+                  {STAGE_LABEL[stageKey]}
+                </div>
                 <div className="thumbs">
                   {files.map((a) => (
                     <Thumb key={a.id} attachment={a} />
@@ -134,7 +153,10 @@ export function Attachments({
         )}
 
         {stages.length > 0 ? (
-          <div className="stack-sm" style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}>
+          <div
+            className="stack-sm"
+            style={{ borderTop: "1px solid var(--border)", paddingTop: 16 }}
+          >
             <div className="field">
               <label htmlFor="attachment-stage">แนบเป็นขั้นตอน</label>
               <select
@@ -143,10 +165,14 @@ export function Attachments({
                 className="select"
                 value={selectedStage}
                 disabled={busy}
-                onChange={(event) => setStage(event.target.value as AttachmentStage)}
+                onChange={(event) =>
+                  setStage(event.target.value as AttachmentStage)
+                }
               >
                 {stages.map((s) => (
-                  <option key={s} value={s}>{STAGE_LABEL[s]}</option>
+                  <option key={s} value={s}>
+                    {STAGE_LABEL[s]}
+                  </option>
                 ))}
               </select>
             </div>
@@ -177,7 +203,11 @@ export function Attachments({
                   <Upload size={22} aria-hidden />
                   <div>
                     ลากไฟล์มาวางที่นี่ หรือ{" "}
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => inputRef.current?.click()}>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => inputRef.current?.click()}
+                    >
                       เลือกไฟล์
                     </button>
                   </div>

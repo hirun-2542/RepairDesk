@@ -7,7 +7,10 @@ export default async function Jobs() {
   // Server-enforced scope: a technician only ever loads jobs assigned to them.
   const jobs = await prisma.repairJob.findMany({
     where: user.role === "TECHNICIAN" ? { technicianId: user.id } : {},
-    include: { customer: { select: { name: true } }, technician: { select: { name: true } } },
+    include: {
+      customer: { select: { name: true } },
+      technician: { select: { name: true } },
+    },
     orderBy: { updatedAt: "desc" },
   });
   return <JobBoard jobs={jobs} role={user.role} />;

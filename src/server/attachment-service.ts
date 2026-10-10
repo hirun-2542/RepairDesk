@@ -19,7 +19,12 @@ export const ATTACHMENT_ERRORS = {
  * The job revision bumps on success, invalidating any in-flight workflow command.
  * If the database write fails, the just-saved file is removed.
  */
-export async function addAttachment(actor: Actor, jobId: string, stage: AttachmentStage, file: File) {
+export async function addAttachment(
+  actor: Actor,
+  jobId: string,
+  stage: AttachmentStage,
+  file: File,
+) {
   const saved = await saveUpload(file);
   try {
     return await prisma.$transaction(async (tx) => {
@@ -29,8 +34,10 @@ export async function addAttachment(actor: Actor, jobId: string, stage: Attachme
         select: { id: true, status: true, technicianId: true },
       });
       if (!job) throw new DomainError(ATTACHMENT_ERRORS.jobNotFound);
-      if (job.status === "COMPLETED" || job.status === "CANCELLED") throw new DomainError(ATTACHMENT_ERRORS.jobClosed);
-      if (!uploadableStages(staff, job).includes(stage)) throw new DomainError(ATTACHMENT_ERRORS.stageForbidden);
+      if (job.status === "COMPLETED" || job.status === "CANCELLED")
+        throw new DomainError(ATTACHMENT_ERRORS.jobClosed);
+      if (!uploadableStages(staff, job).includes(stage))
+        throw new DomainError(ATTACHMENT_ERRORS.stageForbidden);
       const attachment = await tx.attachment.create({
         data: {
           jobId,
@@ -42,7 +49,10 @@ export async function addAttachment(actor: Actor, jobId: string, stage: Attachme
           uploadedById: staff.id,
         },
       });
-      await tx.repairJob.update({ where: { id: jobId }, data: { revision: { increment: 1 } } });
+      await tx.repairJob.update({
+        where: { id: jobId },
+        data: { revision: { increment: 1 } },
+      });
       await writeAudit(tx, {
         actor: staff,
         action: "attachment.upload",

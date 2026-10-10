@@ -43,7 +43,12 @@ const TIMELINE_STATUS: Record<string, JobStatus> = {
   "job.cancel": "CANCELLED",
 };
 
-export type PublicQuoteLine = { type: LineType; description: string; qty: number; unitPrice: number };
+export type PublicQuoteLine = {
+  type: LineType;
+  description: string;
+  qty: number;
+  unitPrice: number;
+};
 export type PublicQuote = {
   version: number;
   status: QuoteStatus;
@@ -52,8 +57,18 @@ export type PublicQuote = {
   total: number;
   lines: PublicQuoteLine[];
 };
-export type PublicAttachment = { id: string; stage: AttachmentStage; fileName: string; mimeType: string };
-export type PublicPayment = { kind: PaymentKind; method: PaymentMethod; amount: number; paidAt: string };
+export type PublicAttachment = {
+  id: string;
+  stage: AttachmentStage;
+  fileName: string;
+  mimeType: string;
+};
+export type PublicPayment = {
+  kind: PaymentKind;
+  method: PaymentMethod;
+  amount: number;
+  paidAt: string;
+};
 export type PublicTimelineEntry = { status: JobStatus; at: string };
 
 export type PublicTracking = {
@@ -81,7 +96,9 @@ export type PublicTracking = {
 };
 
 /** Returns the public projection, or null for any unknown/empty token (no information leak). */
-export async function getPublicTracking(token: string): Promise<PublicTracking | null> {
+export async function getPublicTracking(
+  token: string,
+): Promise<PublicTracking | null> {
   if (!token) return null;
   const job = await prisma.repairJob.findUnique({
     where: { trackingToken: token },
@@ -106,7 +123,14 @@ export async function getPublicTracking(token: string): Promise<PublicTracking |
           subtotal: true,
           vat: true,
           total: true,
-          lines: { select: { type: true, description: true, qty: true, unitPrice: true } },
+          lines: {
+            select: {
+              type: true,
+              description: true,
+              qty: true,
+              unitPrice: true,
+            },
+          },
         },
       },
       attachments: {
@@ -114,7 +138,9 @@ export async function getPublicTracking(token: string): Promise<PublicTracking |
         orderBy: { createdAt: "asc" },
         select: { id: true, stage: true, fileName: true, mimeType: true },
       },
-      payment: { select: { kind: true, method: true, amount: true, paidAt: true } },
+      payment: {
+        select: { kind: true, method: true, amount: true, paidAt: true },
+      },
     },
   });
   if (!job) return null;
@@ -179,8 +205,15 @@ export async function getPublicTracking(token: string): Promise<PublicTracking |
  * Resolves the job from the token server-side (never trusts a client id) and records the
  * customer's decision through the shared workflow service.
  */
-export async function decideByToken(token: string, decision: "APPROVE" | "REJECT", revision: number) {
-  const job = await prisma.repairJob.findUnique({ where: { trackingToken: token }, select: { id: true } });
+export async function decideByToken(
+  token: string,
+  decision: "APPROVE" | "REJECT",
+  revision: number,
+) {
+  const job = await prisma.repairJob.findUnique({
+    where: { trackingToken: token },
+    select: { id: true },
+  });
   if (!job) throw new DomainError("ไม่พบลิงก์ติดตามงาน");
   await decideQuote({ kind: "CUSTOMER" }, job.id, decision, revision);
 }

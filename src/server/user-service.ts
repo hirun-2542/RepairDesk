@@ -21,11 +21,28 @@ export const USER_ERRORS = {
   forbidden: "ไม่มีสิทธิ์ทำรายการนี้",
 } as const;
 
-export type UserInput = { name: string; email: string; password: string; role: Role };
+export type UserInput = {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+};
 export type UpdateUserPatch = { role?: Role; active?: boolean };
-export type PublicUser = { id: string; name: string; email: string; role: Role; active: boolean };
+export type PublicUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  active: boolean;
+};
 
-const publicSelect = { id: true, name: true, email: true, role: true, active: true } as const;
+const publicSelect = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  active: true,
+} as const;
 
 /**
  * Admin authorization is resolved from the current database row — never from the
@@ -34,14 +51,22 @@ const publicSelect = { id: true, name: true, email: true, role: true, active: tr
  */
 async function loadAdmin(tx: Prisma.TransactionClient, actor: AuditActor) {
   if (actor.kind !== "USER") throw new DomainError(USER_ERRORS.forbidden);
-  const fresh = await tx.user.findUnique({ where: { id: actor.id }, select: { id: true, name: true, role: true, active: true } });
-  if (!fresh || !fresh.active || fresh.role !== "ADMIN") throw new DomainError(USER_ERRORS.forbidden);
+  const fresh = await tx.user.findUnique({
+    where: { id: actor.id },
+    select: { id: true, name: true, role: true, active: true },
+  });
+  if (!fresh || !fresh.active || fresh.role !== "ADMIN")
+    throw new DomainError(USER_ERRORS.forbidden);
   return fresh;
 }
 
-export async function createUser(actor: AuditActor, input: UserInput): Promise<PublicUser> {
+export async function createUser(
+  actor: AuditActor,
+  input: UserInput,
+): Promise<PublicUser> {
   const name = typeof input.name === "string" ? input.name.trim() : "";
-  const email = typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+  const email =
+    typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
   const password = typeof input.password === "string" ? input.password : "";
   const role = input.role;
 
@@ -52,28 +77,46 @@ export async function createUser(actor: AuditActor, input: UserInput): Promise<P
 
   return prisma.$transaction(async (tx) => {
     const admin = await loadAdmin(tx, actor);
-    if (await tx.user.findUnique({ where: { email }, select: { id: true } })) throw new DomainError(USER_ERRORS.emailTaken);
+    if (await tx.user.findUnique({ where: { email }, select: { id: true } }))
+      throw new DomainError(USER_ERRORS.emailTaken);
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const user = await tx.user.create({ data: { name, email, passwordHash, role }, select: publicSelect });
+    const user = await tx.user.create({
+      data: { name, email, passwordHash, role },
+      select: publicSelect,
+    });
     await writeAudit(tx, {
       actor: { kind: "USER", id: admin.id, name: admin.name, role: admin.role },
       action: "user.create",
       entityType: "User",
       entityId: user.id,
-      after: { name: user.name, email: user.email, role: user.role, active: user.active },
+      after: {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        active: user.active,
+      },
     });
     return user;
   });
 }
 
-export async function updateUser(actor: AuditActor, id: string, patch: UpdateUserPatch): Promise<PublicUser> {
-  if (patch.role !== undefined && !ROLES.includes(patch.role)) throw new DomainError(USER_ERRORS.roleInvalid);
-  if (patch.active !== undefined && typeof patch.active !== "boolean") throw new DomainError(USER_ERRORS.activeInvalid);
+export async function updateUser(
+  actor: AuditActor,
+  id: string,
+  patch: UpdateUserPatch,
+): Promise<PublicUser> {
+  if (patch.role !== undefined && !ROLES.includes(patch.role))
+    throw new DomainError(USER_ERRORS.roleInvalid);
+  if (patch.active !== undefined && typeof patch.active !== "boolean")
+    throw new DomainError(USER_ERRORS.activeInvalid);
 
   return prisma.$transaction(async (tx) => {
     const admin = await loadAdmin(tx, actor);
-    const target = await tx.user.findUnique({ where: { id }, select: publicSelect });
+    const target = await tx.user.findUnique({
+      where: { id },
+      select: publicSelect,
+    });
     if (!target) throw new DomainError(USER_ERRORS.userNotFound);
     if (target.id === admin.id) throw new DomainError(USER_ERRORS.selfEdit);
 
@@ -89,7 +132,14 @@ export async function updateUser(actor: AuditActor, id: string, patch: UpdateUse
     }
     if (after.role === undefined && after.active === undefined) return target;
 
-    const user = await tx.user.update({ where: { id }, data: { ...(after.role !== undefined && { role: after.role }), ...(after.active !== undefined && { active: after.active }) }, select: publicSelect });
+    const user = await tx.user.update({
+      where: { id },
+      data: {
+        ...(after.role !== undefined && { role: after.role }),
+        ...(after.active !== undefined && { active: after.active }),
+      },
+      select: publicSelect,
+    });
     await writeAudit(tx, {
       actor: { kind: "USER", id: admin.id, name: admin.name, role: admin.role },
       action: "user.update",

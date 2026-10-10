@@ -1,10 +1,252 @@
 "use client";
-import {useState,useTransition} from "react";
-import {useRouter} from "next/navigation";
-import {toast} from "sonner";
-import type {PaymentMethod} from "@/domain/types";
-import {METHOD_LABEL} from "@/domain/labels";
-import {formatTHB,parseBahtToSatang} from "@/domain/money";
-import {Dialog,DialogContent,DialogTitle,DialogDescription} from "@/components/ui/dialog";
-import {completeAction,cancelAction} from "@/app/(staff)/jobs/[id]/payment-actions";
-export function PaymentControls({id,revision,canComplete,canCancel,total,hasSlip,rejected}:{id:string;revision:number;canComplete:boolean;canCancel:boolean;total:number;hasSlip:boolean;rejected:boolean}){const[open,setOpen]=useState<"COMPLETE"|"CANCEL"|null>(null);const[method,setMethod]=useState<PaymentMethod>("CASH");const[reference,setReference]=useState("");const[reason,setReason]=useState(rejected?"ลูกค้าไม่อนุมัติใบเสนอราคา":"");const[fee,setFee]=useState("0");const[feeMethod,setFeeMethod]=useState<PaymentMethod|"">("");const[error,setError]=useState("");const[pending,start]=useTransition();const router=useRouter();const blocked=open==="COMPLETE"&&method==="TRANSFER"&&!hasSlip;return <><div className="actions" style={{marginTop:12}}>{canComplete&&<button className="btn btn-primary" onClick={()=>setOpen("COMPLETE")}>รับชำระเงินและปิดงาน</button>}{canCancel&&<button className="btn btn-danger-outline" onClick={()=>setOpen("CANCEL")}>ยกเลิกงาน</button>}</div><Dialog open={open!==null} onOpenChange={value=>{if(!value){setOpen(null);setError("");}}}><DialogContent style={{background:"var(--surface)",width:"min(640px,calc(100vw - 32px))",maxWidth:640,maxHeight:"85vh",overflowY:"auto"}}><DialogTitle>{open==="COMPLETE"?"รับชำระเงินและปิดงาน":"ยกเลิกงาน"}</DialogTitle><DialogDescription>{open==="COMPLETE"?"รับชำระเต็มยอดตามใบเสนอราคาที่อนุมัติ":"การยกเลิกไม่สามารถย้อนกลับได้ ประวัติทั้งหมดจะยังอยู่ใน Audit Log"}</DialogDescription><form className="stack" onSubmit={e=>{e.preventDefault();setError("");if(blocked)return;let feeSatang=0;if(open==="CANCEL"){if(!reason.trim()){setError("กรุณาระบุเหตุผลการยกเลิก");return;}try{feeSatang=parseBahtToSatang(fee);}catch{setError("จำนวนเงินไม่ถูกต้อง");return;}if(feeSatang>0&&!feeMethod){setError("กรุณาเลือกวิธีรับชำระค่าตรวจเช็ค");return;}}start(async()=>{const result=open==="COMPLETE"?await completeAction(id,revision,{method,reference}):await cancelAction(id,revision,{reason,feeSatang,...(feeMethod?{method:feeMethod}:{})});if(result.ok){toast.success(open==="COMPLETE"?"รับชำระเงินและปิดงานเรียบร้อย":"ยกเลิกงานเรียบร้อย");setOpen(null);router.refresh();}else{setError(result.error);toast.error(result.error);}});}}>{error&&<p role="alert" className="banner banner-error">{error}</p>}{open==="COMPLETE"?<><div className="card card-pad"><p>ยอดที่ต้องชำระ (ตามใบเสนอราคาที่อนุมัติ)</p><strong style={{fontSize:30}}>{formatTHB(total)}</strong></div><div className="field"><label htmlFor="method">วิธีชำระเงิน</label><select id="method" className="select" value={method} onChange={e=>setMethod(e.target.value as PaymentMethod)}>{Object.entries(METHOD_LABEL).map(([key,label])=><option value={key} key={key}>{label}</option>)}</select></div><div className="field"><label htmlFor="reference">เลขอ้างอิง (ถ้ามี)</label><input id="reference" className="input" value={reference} onChange={e=>setReference(e.target.value)}/></div>{blocked&&<p className="banner banner-warn">ต้องแนบสลิปการโอนก่อน — กลับไปที่ไฟล์แนบ เลือกสลิปชำระเงิน แล้วอัปโหลด</p>}</>:<><div className="field"><label htmlFor="cancel-reason">เหตุผลการยกเลิก *</label><textarea id="cancel-reason" className="textarea" value={reason} onChange={e=>setReason(e.target.value)}/></div><div className="field"><label htmlFor="inspection-fee">ค่าตรวจเช็ค (บาท)</label><input id="inspection-fee" className="input" inputMode="decimal" value={fee} onChange={e=>setFee(e.target.value)}/><p className="help">ใส่ 0 หากไม่เรียกเก็บ</p></div>{fee!=="0"&&fee!==""&&<div className="field"><label htmlFor="fee-method">วิธีรับชำระค่าตรวจเช็ค *</label><select id="fee-method" className="select" value={feeMethod} onChange={e=>setFeeMethod(e.target.value as PaymentMethod)}><option value="">เลือกวิธีชำระ</option>{Object.entries(METHOD_LABEL).map(([key,label])=><option value={key} key={key}>{label}</option>)}</select></div>}</>}<div className="row between"><button type="button" className="btn btn-secondary" onClick={()=>setOpen(null)}>ยกเลิก</button><button className={"btn "+(open==="CANCEL"?"btn-danger":"btn-primary")} disabled={pending||blocked}>{pending?"กำลังบันทึก…":open==="COMPLETE"?"ยืนยันรับชำระ "+formatTHB(total):"ยืนยันยกเลิกงาน"}</button></div></form></DialogContent></Dialog></>;}
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import type { PaymentMethod } from "@/domain/types";
+import { METHOD_LABEL } from "@/domain/labels";
+import { formatTHB, parseBahtToSatang } from "@/domain/money";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  completeAction,
+  cancelAction,
+} from "@/app/(staff)/jobs/[id]/payment-actions";
+export function PaymentControls({
+  id,
+  revision,
+  canComplete,
+  canCancel,
+  total,
+  hasSlip,
+  rejected,
+}: {
+  id: string;
+  revision: number;
+  canComplete: boolean;
+  canCancel: boolean;
+  total: number;
+  hasSlip: boolean;
+  rejected: boolean;
+}) {
+  const [open, setOpen] = useState<"COMPLETE" | "CANCEL" | null>(null);
+  const [method, setMethod] = useState<PaymentMethod>("CASH");
+  const [reference, setReference] = useState("");
+  const [reason, setReason] = useState(
+    rejected ? "ลูกค้าไม่อนุมัติใบเสนอราคา" : "",
+  );
+  const [fee, setFee] = useState("0");
+  const [feeMethod, setFeeMethod] = useState<PaymentMethod | "">("");
+  const [error, setError] = useState("");
+  const [pending, start] = useTransition();
+  const router = useRouter();
+  const blocked = open === "COMPLETE" && method === "TRANSFER" && !hasSlip;
+  return (
+    <>
+      <div className="actions" style={{ marginTop: 12 }}>
+        {canComplete && (
+          <button
+            className="btn btn-primary"
+            onClick={() => setOpen("COMPLETE")}
+          >
+            รับชำระเงินและปิดงาน
+          </button>
+        )}
+        {canCancel && (
+          <button
+            className="btn btn-danger-outline"
+            onClick={() => setOpen("CANCEL")}
+          >
+            ยกเลิกงาน
+          </button>
+        )}
+      </div>
+      <Dialog
+        open={open !== null}
+        onOpenChange={(value) => {
+          if (!value) {
+            setOpen(null);
+            setError("");
+          }
+        }}
+      >
+        <DialogContent
+          style={{
+            background: "var(--surface)",
+            width: "min(640px,calc(100vw - 32px))",
+            maxWidth: 640,
+            maxHeight: "85vh",
+            overflowY: "auto",
+          }}
+        >
+          <DialogTitle>
+            {open === "COMPLETE" ? "รับชำระเงินและปิดงาน" : "ยกเลิกงาน"}
+          </DialogTitle>
+          <DialogDescription>
+            {open === "COMPLETE"
+              ? "รับชำระเต็มยอดตามใบเสนอราคาที่อนุมัติ"
+              : "การยกเลิกไม่สามารถย้อนกลับได้ ประวัติทั้งหมดจะยังอยู่ใน Audit Log"}
+          </DialogDescription>
+          <form
+            className="stack"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setError("");
+              if (blocked) return;
+              let feeSatang = 0;
+              if (open === "CANCEL") {
+                if (!reason.trim()) {
+                  setError("กรุณาระบุเหตุผลการยกเลิก");
+                  return;
+                }
+                try {
+                  feeSatang = parseBahtToSatang(fee);
+                } catch {
+                  setError("จำนวนเงินไม่ถูกต้อง");
+                  return;
+                }
+                if (feeSatang > 0 && !feeMethod) {
+                  setError("กรุณาเลือกวิธีรับชำระค่าตรวจเช็ค");
+                  return;
+                }
+              }
+              start(async () => {
+                const result =
+                  open === "COMPLETE"
+                    ? await completeAction(id, revision, { method, reference })
+                    : await cancelAction(id, revision, {
+                        reason,
+                        feeSatang,
+                        ...(feeMethod ? { method: feeMethod } : {}),
+                      });
+                if (result.ok) {
+                  toast.success(
+                    open === "COMPLETE"
+                      ? "รับชำระเงินและปิดงานเรียบร้อย"
+                      : "ยกเลิกงานเรียบร้อย",
+                  );
+                  setOpen(null);
+                  router.refresh();
+                } else {
+                  setError(result.error);
+                  toast.error(result.error);
+                }
+              });
+            }}
+          >
+            {error && (
+              <p role="alert" className="banner banner-error">
+                {error}
+              </p>
+            )}
+            {open === "COMPLETE" ? (
+              <>
+                <div className="card card-pad">
+                  <p>ยอดที่ต้องชำระ (ตามใบเสนอราคาที่อนุมัติ)</p>
+                  <strong style={{ fontSize: 30 }}>{formatTHB(total)}</strong>
+                </div>
+                <div className="field">
+                  <label htmlFor="method">วิธีชำระเงิน</label>
+                  <select
+                    id="method"
+                    className="select"
+                    value={method}
+                    onChange={(e) => setMethod(e.target.value as PaymentMethod)}
+                  >
+                    {Object.entries(METHOD_LABEL).map(([key, label]) => (
+                      <option value={key} key={key}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="field">
+                  <label htmlFor="reference">เลขอ้างอิง (ถ้ามี)</label>
+                  <input
+                    id="reference"
+                    className="input"
+                    value={reference}
+                    onChange={(e) => setReference(e.target.value)}
+                  />
+                </div>
+                {blocked && (
+                  <p className="banner banner-warn">
+                    ต้องแนบสลิปการโอนก่อน — กลับไปที่ไฟล์แนบ เลือกสลิปชำระเงิน
+                    แล้วอัปโหลด
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="field">
+                  <label htmlFor="cancel-reason">เหตุผลการยกเลิก *</label>
+                  <textarea
+                    id="cancel-reason"
+                    className="textarea"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                </div>
+                <div className="field">
+                  <label htmlFor="inspection-fee">ค่าตรวจเช็ค (บาท)</label>
+                  <input
+                    id="inspection-fee"
+                    className="input"
+                    inputMode="decimal"
+                    value={fee}
+                    onChange={(e) => setFee(e.target.value)}
+                  />
+                  <p className="help">ใส่ 0 หากไม่เรียกเก็บ</p>
+                </div>
+                {fee !== "0" && fee !== "" && (
+                  <div className="field">
+                    <label htmlFor="fee-method">วิธีรับชำระค่าตรวจเช็ค *</label>
+                    <select
+                      id="fee-method"
+                      className="select"
+                      value={feeMethod}
+                      onChange={(e) =>
+                        setFeeMethod(e.target.value as PaymentMethod)
+                      }
+                    >
+                      <option value="">เลือกวิธีชำระ</option>
+                      {Object.entries(METHOD_LABEL).map(([key, label]) => (
+                        <option value={key} key={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </>
+            )}
+            <div className="row between">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setOpen(null)}
+              >
+                ยกเลิก
+              </button>
+              <button
+                className={
+                  "btn " + (open === "CANCEL" ? "btn-danger" : "btn-primary")
+                }
+                disabled={pending || blocked}
+              >
+                {pending
+                  ? "กำลังบันทึก…"
+                  : open === "COMPLETE"
+                    ? "ยืนยันรับชำระ " + formatTHB(total)
+                    : "ยืนยันยกเลิกงาน"}
+              </button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

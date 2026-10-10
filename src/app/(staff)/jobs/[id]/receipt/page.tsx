@@ -1,11 +1,137 @@
 import Link from "next/link";
-import {headers} from "next/headers";
-import {notFound} from "next/navigation";
-import {requireUser} from "@/lib/session";
-import {getJobDetail} from "@/server/job-service";
-import {canViewJob} from "@/domain/permissions";
-import {CATEGORY_LABEL,METHOD_LABEL} from "@/domain/labels";
-import {formatTHB} from "@/domain/money";
-import {formatDate} from "@/components/job-ui";
-import {PrintButton} from "@/components/print-button";
-export default async function Receipt({params}:{params:Promise<{id:string}>}){const user=await requireUser();const {id}=await params;const job=await getJobDetail(id);if(!job||!canViewJob(user,job))notFound();const requestHeaders=await headers();const origin=(requestHeaders.get("x-forwarded-proto")||"http")+"://"+(requestHeaders.get("host")||"localhost:3000");const trackingLink=origin+"/track/"+job.trackingToken;const payment=job.payment;const quote=job.quotes.find(q=>q.status==="APPROVED");return <div className="page"><div className="page-head no-print"><div><Link href={"/jobs/"+id}>กลับใบงาน {job.jobNo}</Link><h1>ใบรับงาน / ใบเสร็จรับเงิน</h1></div><PrintButton/></div><article className="paper stack"><header className="row between"><div><h2>Demo Repair Shop</h2><p className="muted">เอกสารออกโดยระบบ RepairDesk</p></div><div><h2>ใบรับงาน</h2><strong>{job.jobNo}</strong><p>{formatDate(job.createdAt)}</p></div></header><hr/><dl className="kv"><dt>ลูกค้า</dt><dd>{job.customer.name}</dd><dt>โทรศัพท์</dt><dd>{job.customer.phone}</dd><dt>อุปกรณ์</dt><dd>{CATEGORY_LABEL[job.category]} · {job.brand} {job.model}</dd><dt>รหัส/ทะเบียน</dt><dd>{job.identifier??"—"}</dd><dt>อาการ</dt><dd>{job.symptom}</dd><dt>อุปกรณ์มาด้วย</dt><dd>{job.accessories??"—"}</dd></dl><p style={{overflowWrap:"anywhere"}}>ติดตามสถานะงานได้ที่ลิงก์ส่วนตัว: <a href={trackingLink}>{trackingLink}</a></p>{payment&&<><hr/><h2>ใบเสร็จรับเงิน</h2><div className="tablewrap"><table><thead><tr><th>รายการ</th><th className="right">จำนวน</th><th className="right">ราคา/หน่วย</th><th className="right">รวม</th></tr></thead><tbody>{payment.kind==="INSPECTION_FEE"?<tr><td>ค่าตรวจเช็ค</td><td className="right">1</td><td className="right">{formatTHB(payment.amount)}</td><td className="right">{formatTHB(payment.amount)}</td></tr>:quote?.lines.map(line=><tr key={line.id}><td>{line.description}</td><td className="right">{line.qty}</td><td className="right">{formatTHB(line.unitPrice)}</td><td className="right">{formatTHB(line.amount)}</td></tr>)}</tbody></table></div><div className="totals">{payment.kind==="REPAIR"&&quote&&<><div><span>รวมก่อน VAT</span><span>{formatTHB(quote.subtotal)}</span></div><div><span>VAT 7%</span><span>{formatTHB(quote.vat)}</span></div></>}<div className="grand"><span>ยอดชำระ</span><span>{formatTHB(payment.amount)}</span></div></div><p>ชำระโดย {METHOD_LABEL[payment.method]} {payment.reference&&"· อ้างอิง "+payment.reference}</p><p>ชำระเมื่อ {formatDate(payment.paidAt)} · ผู้รับเงิน {payment.receivedBy.name}</p></>}<footer>ขอบคุณที่ใช้บริการ</footer></article></div>;}
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { requireUser } from "@/lib/session";
+import { getJobDetail } from "@/server/job-service";
+import { canViewJob } from "@/domain/permissions";
+import { CATEGORY_LABEL, METHOD_LABEL } from "@/domain/labels";
+import { formatTHB } from "@/domain/money";
+import { formatDate } from "@/components/job-ui";
+import { PrintButton } from "@/components/print-button";
+export default async function Receipt({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const user = await requireUser();
+  const { id } = await params;
+  const job = await getJobDetail(id);
+  if (!job || !canViewJob(user, job)) notFound();
+  const requestHeaders = await headers();
+  const origin =
+    (requestHeaders.get("x-forwarded-proto") || "http") +
+    "://" +
+    (requestHeaders.get("host") || "localhost:3000");
+  const trackingLink = origin + "/track/" + job.trackingToken;
+  const payment = job.payment;
+  const quote = job.quotes.find((q) => q.status === "APPROVED");
+  return (
+    <div className="page">
+      <div className="page-head no-print">
+        <div>
+          <Link href={"/jobs/" + id}>กลับใบงาน {job.jobNo}</Link>
+          <h1>ใบรับงาน / ใบเสร็จรับเงิน</h1>
+        </div>
+        <PrintButton />
+      </div>
+      <article className="paper stack">
+        <header className="row between">
+          <div>
+            <h2>Demo Repair Shop</h2>
+            <p className="muted">เอกสารออกโดยระบบ RepairDesk</p>
+          </div>
+          <div>
+            <h2>ใบรับงาน</h2>
+            <strong>{job.jobNo}</strong>
+            <p>{formatDate(job.createdAt)}</p>
+          </div>
+        </header>
+        <hr />
+        <dl className="kv">
+          <dt>ลูกค้า</dt>
+          <dd>{job.customer.name}</dd>
+          <dt>โทรศัพท์</dt>
+          <dd>{job.customer.phone}</dd>
+          <dt>อุปกรณ์</dt>
+          <dd>
+            {CATEGORY_LABEL[job.category]} · {job.brand} {job.model}
+          </dd>
+          <dt>รหัส/ทะเบียน</dt>
+          <dd>{job.identifier ?? "—"}</dd>
+          <dt>อาการ</dt>
+          <dd>{job.symptom}</dd>
+          <dt>อุปกรณ์มาด้วย</dt>
+          <dd>{job.accessories ?? "—"}</dd>
+        </dl>
+        <p style={{ overflowWrap: "anywhere" }}>
+          ติดตามสถานะงานได้ที่ลิงก์ส่วนตัว:{" "}
+          <a href={trackingLink}>{trackingLink}</a>
+        </p>
+        {payment && (
+          <>
+            <hr />
+            <h2>ใบเสร็จรับเงิน</h2>
+            <div className="tablewrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>รายการ</th>
+                    <th className="right">จำนวน</th>
+                    <th className="right">ราคา/หน่วย</th>
+                    <th className="right">รวม</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {payment.kind === "INSPECTION_FEE" ? (
+                    <tr>
+                      <td>ค่าตรวจเช็ค</td>
+                      <td className="right">1</td>
+                      <td className="right">{formatTHB(payment.amount)}</td>
+                      <td className="right">{formatTHB(payment.amount)}</td>
+                    </tr>
+                  ) : (
+                    quote?.lines.map((line) => (
+                      <tr key={line.id}>
+                        <td>{line.description}</td>
+                        <td className="right">{line.qty}</td>
+                        <td className="right">{formatTHB(line.unitPrice)}</td>
+                        <td className="right">{formatTHB(line.amount)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            <div className="totals">
+              {payment.kind === "REPAIR" && quote && (
+                <>
+                  <div>
+                    <span>รวมก่อน VAT</span>
+                    <span>{formatTHB(quote.subtotal)}</span>
+                  </div>
+                  <div>
+                    <span>VAT 7%</span>
+                    <span>{formatTHB(quote.vat)}</span>
+                  </div>
+                </>
+              )}
+              <div className="grand">
+                <span>ยอดชำระ</span>
+                <span>{formatTHB(payment.amount)}</span>
+              </div>
+            </div>
+            <p>
+              ชำระโดย {METHOD_LABEL[payment.method]}{" "}
+              {payment.reference && "· อ้างอิง " + payment.reference}
+            </p>
+            <p>
+              ชำระเมื่อ {formatDate(payment.paidAt)} · ผู้รับเงิน{" "}
+              {payment.receivedBy.name}
+            </p>
+          </>
+        )}
+        <footer>ขอบคุณที่ใช้บริการ</footer>
+      </article>
+    </div>
+  );
+}

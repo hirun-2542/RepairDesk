@@ -18,10 +18,18 @@ const SAFE_STORED_NAME = /^[A-Za-z0-9-]+\.(jpg|png|webp|pdf)$/;
 function matchesSignature(mime: string, bytes: Uint8Array): boolean {
   switch (mime) {
     case "image/jpeg":
-      return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+      return (
+        bytes.length >= 3 &&
+        bytes[0] === 0xff &&
+        bytes[1] === 0xd8 &&
+        bytes[2] === 0xff
+      );
     case "image/png": {
       const sig = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-      return bytes.length >= sig.length && sig.every((byte, index) => bytes[index] === byte);
+      return (
+        bytes.length >= sig.length &&
+        sig.every((byte, index) => bytes[index] === byte)
+      );
     }
     case "image/webp":
       return (
@@ -30,13 +38,21 @@ function matchesSignature(mime: string, bytes: Uint8Array): boolean {
         String.fromCharCode(...bytes.slice(8, 12)) === "WEBP"
       );
     case "application/pdf":
-      return bytes.length >= 5 && String.fromCharCode(...bytes.slice(0, 5)) === "%PDF-";
+      return (
+        bytes.length >= 5 &&
+        String.fromCharCode(...bytes.slice(0, 5)) === "%PDF-"
+      );
     default:
       return false;
   }
 }
 
-export type SavedUpload = { storedName: string; mimeType: string; size: number; fileName: string };
+export type SavedUpload = {
+  storedName: string;
+  mimeType: string;
+  size: number;
+  fileName: string;
+};
 
 /** Validates a browser File, stores it under a random disk name, and returns its metadata. */
 export async function saveUpload(file: File): Promise<SavedUpload> {
@@ -47,8 +63,10 @@ export async function saveUpload(file: File): Promise<SavedUpload> {
   if (file.size > MAX_UPLOAD_BYTES) throw new DomainError("ไฟล์ใหญ่เกิน 10MB");
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (bytes.length === 0) throw new DomainError("ไฟล์ว่าง ไม่สามารถอัปโหลดได้");
-  if (bytes.length > MAX_UPLOAD_BYTES) throw new DomainError("ไฟล์ใหญ่เกิน 10MB");
-  if (!matchesSignature(mimeType, bytes)) throw new DomainError("ไฟล์ต้องเป็น JPG, PNG, WEBP หรือ PDF");
+  if (bytes.length > MAX_UPLOAD_BYTES)
+    throw new DomainError("ไฟล์ใหญ่เกิน 10MB");
+  if (!matchesSignature(mimeType, bytes))
+    throw new DomainError("ไฟล์ต้องเป็น JPG, PNG, WEBP หรือ PDF");
   const storedName = randomUUID() + extension;
   const directory = process.env.UPLOAD_DIR ?? "./uploads";
   await mkdir(directory, { recursive: true });
@@ -60,7 +78,9 @@ export async function saveUpload(file: File): Promise<SavedUpload> {
 export async function readUpload(storedName: string): Promise<Buffer | null> {
   if (!SAFE_STORED_NAME.test(storedName)) return null;
   try {
-    return await readFile(path.join(process.env.UPLOAD_DIR ?? "./uploads", storedName));
+    return await readFile(
+      path.join(process.env.UPLOAD_DIR ?? "./uploads", storedName),
+    );
   } catch {
     return null;
   }
