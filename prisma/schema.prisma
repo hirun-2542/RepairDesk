@@ -10,6 +10,47 @@ enum Role {
  FRONT_DESK
  TECHNICIAN
 }
+enum JobStatus {
+ RECEIVED
+ DIAGNOSING
+ QUOTED
+ APPROVED
+ REPAIRING
+ READY_FOR_PICKUP
+ COMPLETED
+ CANCELLED
+}
+enum ItemCategory {
+ PHONE
+ COMPUTER
+ CAR
+ AIRCON
+}
+enum QuoteStatus {
+ PENDING
+ APPROVED
+ REJECTED
+}
+enum LineType {
+ LABOR
+ PART
+}
+enum PaymentMethod {
+ CASH
+ TRANSFER
+ CARD
+}
+enum PaymentKind {
+ REPAIR
+ INSPECTION_FEE
+}
+enum AttachmentStage {
+ INTAKE
+ DIAGNOSIS
+ BEFORE
+ AFTER
+ PAYMENT_SLIP
+}
 model User {
  id String @id @default(cuid())
  email String @unique
@@ -17,6 +58,101 @@ model User {
  passwordHash String
  role Role
  active Boolean @default(true)
+ createdAt DateTime @default(now())
+ jobs RepairJob[] @relation("Technician")
+ createdJobs RepairJob[] @relation("Creator")
+ quotes Quote[] @relation("QuoteCreator")
+ decidedQuotes Quote[] @relation("QuoteDecider")
+ payments Payment[]
+ attachments Attachment[]
+}
+model Customer {
+ id String @id @default(cuid())
+ name String
+ phone String @unique
+ createdAt DateTime @default(now())
+ jobs RepairJob[]
+}
+model RepairJob {
+ id String @id @default(cuid())
+ jobNo String @unique
+ trackingToken String @unique
+ customerId String
+ customer Customer @relation(fields:[customerId],references:[id])
+ category ItemCategory
+ brand String
+ model String
+ identifier String?
+ symptom String
+ accessories String?
+ status JobStatus @default(RECEIVED)
+ technicianId String?
+ technician User? @relation("Technician",fields:[technicianId],references:[id])
+ diagnosis String?
+ cancelReason String?
+ createdById String
+ createdBy User @relation("Creator",fields:[createdById],references:[id])
+ revision Int @default(0)
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ quotes Quote[]
+ payment Payment?
+ attachments Attachment[]
+ @@index([status])
+ @@index([technicianId])
+}
+model Quote {
+ id String @id @default(cuid())
+ jobId String
+ job RepairJob @relation(fields:[jobId],references:[id])
+ version Int
+ status QuoteStatus @default(PENDING)
+ subtotal Int
+ vat Int
+ total Int
+ note String?
+ createdById String
+ createdBy User @relation("QuoteCreator",fields:[createdById],references:[id])
+ decidedAt DateTime?
+ decidedByUserId String?
+ decidedBy User? @relation("QuoteDecider",fields:[decidedByUserId],references:[id])
+ createdAt DateTime @default(now())
+ lines QuoteLine[]
+ @@unique([jobId,version])
+}
+model QuoteLine {
+ id String @id @default(cuid())
+ quoteId String
+ quote Quote @relation(fields:[quoteId],references:[id])
+ type LineType
+ description String
+ qty Int
+ unitPrice Int
+ amount Int
+}
+model Payment {
+ id String @id @default(cuid())
+ jobId String @unique
+ job RepairJob @relation(fields:[jobId],references:[id])
+ kind PaymentKind
+ method PaymentMethod
+ amount Int
+ reference String?
+ receivedById String
+ receivedBy User @relation(fields:[receivedById],references:[id])
+ paidAt DateTime @default(now())
+}
+model Attachment {
+ id String @id @default(cuid())
+ jobId String
+ job RepairJob @relation(fields:[jobId],references:[id])
+ stage AttachmentStage
+ fileName String
+ storedName String @unique
+ mimeType String
+ size Int
+ uploadedById String?
+ uploadedBy User? @relation(fields:[uploadedById],references:[id])
  createdAt DateTime @default(now())
 }
 model AuditLog {
