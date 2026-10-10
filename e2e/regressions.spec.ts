@@ -46,7 +46,8 @@ test("แถบด้านบนบนมือถือไม่ยืดใ�
     await expectTopbarIsABar(front.page, "short staff page");
 
     // A technician opening another technician's job gets the private not-found page,
-    // which must still be rendered inside the compact staff shell.
+    // which per design/screenshots/12-job-forbidden-technician.png renders INSIDE the
+    // compact staff shell (design/README.md screen states, job detail row).
     const { id } = await createJob(front.page, { technicianLabel: "ช่างเอ" });
     await tech2.page.setViewportSize(MOBILE);
     await tech2.page.goto(`/jobs/${id}`);
