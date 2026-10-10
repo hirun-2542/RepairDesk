@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset --force",
+    "db:reset": "prisma migrate reset --force && npm run db:seed",
     "db:seed": "tsx prisma/seed.ts",
     "test": "vitest run",
     "e2e": "playwright test"

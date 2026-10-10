@@ -35,7 +35,7 @@ npm run dev
 npm run db:reset
 ```
 
-**คำสั่งนี้ลบข้อมูลในฐานข้อมูลที่ตั้งไว้ใน DATABASE_URL แล้วสร้าง demo ใหม่** อย่าใช้กับข้อมูลลูกค้าจริง Prisma รัน seed ให้อัตโนมัติหลัง reset (ตั้งค่า `migrations.seed` ไว้ใน `prisma.config.ts`) จึงไม่ต้องรัน `npm run db:seed` ซ้ำ
+**คำสั่งนี้ลบข้อมูลในฐานข้อมูลที่ตั้งไว้ใน DATABASE_URL แล้วสร้าง demo ใหม่** อย่าใช้กับข้อมูลลูกค้าจริง ใน Prisma 7 การ reset ไม่รัน seed อัตโนมัติ (auto-seed ถูกถอดออกแล้ว) คำสั่งนี้จึงรัน `prisma migrate reset --force` แล้วต่อด้วย `npm run db:seed` โดยคำสั่ง seed กำหนดไว้ที่ `migrations.seed` ใน `prisma.config.ts` และ seed จะปฏิเสธถ้าฐานข้อมูลไม่ว่าง
 
 > Prisma บล็อกการ reset ที่ทำลายข้อมูลเมื่อรันโดย AI agent เว้นแต่ผู้ใช้ยินยอมชัดเจน (ตัวแปร `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` = ข้อความยินยอมของผู้ใช้) การรีเซ็ตต้องมีคนกดยืนยันเอง
 
