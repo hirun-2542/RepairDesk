@@ -8,8 +8,10 @@ src/generated/
 *.db-journal
 uploads/
 uploads-e2e/
+uploads-demo/
 test-results/
 playwright-report/
 .worktrees/
 .omp/
 .superpowers/
+*.tsbuildinfo
