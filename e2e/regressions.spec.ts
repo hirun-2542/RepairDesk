@@ -110,3 +110,35 @@ test("งานที่ถูกยกเลิก: หน้าลูกค้
     await Promise.all([front.context.close(), anonContext.close()]);
   }
 });
+
+test("รับงาน: validation ไม่ล้างค่าที่กรอกหรือช่างที่เลือก", async ({ browser }) => {
+  const front = await actor(browser, "frontdesk");
+  try {
+    const page = front.page;
+    await page.goto("/jobs/new");
+    await waitForHydration(page);
+    await page.fill("#phone", "123");
+    await page.fill("#name", "ลูกค้าเก็บค่าฟอร์ม");
+    await page.selectOption("#category", "CAR");
+    await page.fill("#brand", "Mazda");
+    await page.fill("#model", "Mazda 2");
+    await page.fill("#identifier", "1กข 9876");
+    await page.fill("#symptom", "แอร์ไม่เย็น");
+    await page.fill("#accessories", "กุญแจสำรอง");
+    await page.selectOption("#technicianId", { label: "ช่างเอ" });
+    await page.getByRole("button", { name: "บันทึกใบรับงาน" }).click();
+    await expect(page.getByText("กรอกข้อมูลไม่ครบ 1 รายการ")).toBeVisible();
+    await expect(page).toHaveURL(/\/jobs\/new$/);
+    for (const [selector, value] of [
+      ["#phone", "123"], ["#name", "ลูกค้าเก็บค่าฟอร์ม"],
+      ["#category", "CAR"], ["#brand", "Mazda"], ["#model", "Mazda 2"],
+      ["#identifier", "1กข 9876"], ["#symptom", "แอร์ไม่เย็น"],
+      ["#accessories", "กุญแจสำรอง"],
+    ]) {
+      await expect(page.locator(selector)).toHaveValue(value);
+    }
+    await expect(page.locator("#technicianId option:checked")).toHaveText("ช่างเอ");
+  } finally {
+    await front.context.close();
+  }
+});

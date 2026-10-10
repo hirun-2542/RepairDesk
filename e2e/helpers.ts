@@ -27,19 +27,12 @@ export async function expectJobDetail(page: Page) {
 }
 
 /**
- * React tags `document.documentElement` with its internal fiber key once hydration has
- * run, and the buttons/dialogs behind these pages only work after that. On the dev server
- * the client bundle is compiled on first request, so a click fired earlier is silently lost.
+ * Cold dev routes compile their client bundles on the first request. Wait on public
+ * browser load states, not React's private fiber properties, before interacting.
  */
 export async function waitForHydration(page: Page) {
-  await page.waitForFunction(
-    () =>
-      Object.getOwnPropertyNames(document.documentElement).some((key) =>
-        key.startsWith("__reactFiber$"),
-      ),
-    undefined,
-    { timeout: 60_000 },
-  );
+  await page.waitForLoadState("load", { timeout: 60_000 });
+  await page.waitForLoadState("networkidle", { timeout: 60_000 });
 }
 
 /** Opens a job detail page and waits until its client handlers are live. */

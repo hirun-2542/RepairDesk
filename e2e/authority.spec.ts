@@ -46,7 +46,8 @@ test("การเปลี่ยนบทบาทมีผลกับเซ�
 
     // Admin promotes the account; the existing session must see it on the next request.
     await userRow(admin.page, email).locator("select").selectOption("FRONT_DESK");
-    await expect(admin.page.getByText("เปลี่ยนบทบาทเรียบร้อย")).toBeVisible();
+    await expect(userRow(admin.page, email).locator("select")).toHaveValue("FRONT_DESK");
+    await expect(userRow(admin.page, email).locator("select")).toBeEnabled();
     await user.goto("/jobs/new");
     await expect(user.getByRole("heading", { name: "รับงานใหม่" })).toBeVisible();
 
@@ -172,5 +173,29 @@ test("งานที่ถูกยกเลิกจากบริบทอ�
     await expectStatus(closer.page, "CANCELLED");
   } finally {
     await Promise.all([stale.context.close(), closer.context.close()]);
+  }
+});
+
+test("งานเสร็จสิ้น: คำขออัปโหลดโดยตรงถูกปฏิเสธ และยอดชำระยังอยู่", async ({ browser }) => {
+  const front = await actor(browser, "frontdesk");
+  try {
+    await front.page.goto("/jobs/list?status=COMPLETED&q=Inspiron");
+    await front.page.locator("tbody a.mono").first().click();
+    await expect(front.page.locator("h1")).toHaveText(/^RJ-\d{4}-\d{4}$/);
+    await expectStatus(front.page, "COMPLETED");
+    const id = new URL(front.page.url()).pathname.split("/").pop()!;
+    const response = await front.context.request.post(
+      `${e2eEnv().baseUrl}/api/jobs/${id}/attachments`,
+      { multipart: { stage: "INTAKE", file: REAL_PNG } },
+    );
+    expect(response.status()).toBe(400);
+    expect(await response.json()).toEqual({ error: CLOSED_UPLOAD });
+    await front.page.reload();
+    await expectStatus(front.page, "COMPLETED");
+    await expect(front.page.locator('[data-testid="file-input"]')).toHaveCount(0);
+    await expect(front.page.getByText(REAL_PNG.name, { exact: false })).toHaveCount(0);
+    await expect(front.page.getByRole("heading", { name: "การชำระเงิน" })).toBeVisible();
+  } finally {
+    await front.context.close();
   }
 });
