@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Plus, SearchX } from "lucide-react";
 import { STATUS_LABEL, STATUS_ORDER } from "@/domain/labels";
 import type { ItemCategory, JobStatus } from "@/domain/types";
-import { STATUS_ICON, formatDate } from "@/components/job-ui";
+import { STATUS_ICON, formatDate, formatRelativeAge } from "@/components/job-ui";
 import { CategoryIcon } from "@/components/category-icon";
 
 export type BoardJob = {
@@ -132,7 +132,9 @@ export function JobBoard({ jobs, role }: { jobs: BoardJob[]; role: string }) {
                       >
                         {job.technician?.name ?? "ยังไม่มอบหมาย"}
                       </span>
-                      <span>{formatDate(job.updatedAt)}</span>
+                      <span title={formatDate(job.updatedAt)}>
+                        {formatRelativeAge(job.updatedAt)}
+                      </span>
                     </div>
                   </Link>
                 ))

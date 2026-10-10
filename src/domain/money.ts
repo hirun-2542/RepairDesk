@@ -14,11 +14,13 @@ export function computeQuoteTotals(lines: QuoteLineInput[]): QuoteTotals {
   return { subtotal, vat, total: subtotal + vat };
 }
 
+const thbFormat = new Intl.NumberFormat("th-TH", {
+  style: "currency",
+  currency: "THB",
+});
+
 export function formatTHB(satang: number): string {
-  return new Intl.NumberFormat("th-TH", {
-    style: "currency",
-    currency: "THB",
-  }).format(satang / 100);
+  return thbFormat.format(satang / 100);
 }
 
 /** Parses a baht string such as "1,234.50" into satang. Throws on negative, non-numeric or >2 decimal input. */

@@ -4,7 +4,7 @@ import { checkAction, type WorkflowContext } from "@/domain/workflow";
 import type { Actor, JobAction } from "@/domain/types";
 import { requireActor } from "./authorization";
 import { writeAudit } from "./audit";
-import { DomainError } from "./errors";
+import { DomainError, errorCode } from "./errors";
 export const CONFLICT = "สถานะงานถูกเปลี่ยนแล้ว กรุณารีเฟรช";
 export const workflowInclude = {
   quotes: { orderBy: { version: "desc" as const }, include: { lines: true } },
@@ -46,6 +46,9 @@ export async function mutateJob(
   ) => Promise<{
     data?: Prisma.RepairJobUpdateManyMutationInput;
     after?: Record<string, unknown>;
+    /** Entity actually changed by the callback; defaults to the RepairJob itself. */
+    entityType?: "RepairJob" | "Quote" | "Payment";
+    entityId?: string;
   }>,
 ) {
   try {
@@ -70,13 +73,8 @@ export async function mutateJob(
       await writeAudit(tx, {
         actor: fresh,
         action: actionCodes[action],
-        entityType:
-          action === "COMPLETE"
-            ? "Payment"
-            : action.includes("QUOTE")
-              ? "Quote"
-              : "RepairJob",
-        entityId: id,
+        entityType: extra.entityType ?? "RepairJob",
+        entityId: extra.entityId ?? id,
         jobId: id,
         before: { status: job.status },
         after: { status: result.to, ...extra.after },
@@ -84,11 +82,10 @@ export async function mutateJob(
       return tx.repairJob.findUniqueOrThrow({ where: { id } });
     });
   } catch (error) {
-    if (
-      ["P2034", "P2028", "SQLITE_BUSY"].includes(
-        String((error as { code?: string }).code),
-      )
-    )
+    // Only genuine write contention becomes a stale-revision message. P2028 (generic
+    // interactive-transaction failure: timeout, closed tx, …) is infrastructure and must
+    // reach the caller unchanged so it is logged instead of disguised as a user conflict.
+    if (["P2034", "SQLITE_BUSY"].includes(errorCode(error) ?? ""))
       throw new DomainError(CONFLICT);
     throw error;
   }

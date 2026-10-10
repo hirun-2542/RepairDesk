@@ -53,7 +53,17 @@ export function TrackProgress({
   timeline: PublicTimelineEntry[];
 }) {
   const cancelled = status === "CANCELLED";
-  const steps: JobStatus[] = cancelled ? ["RECEIVED", "CANCELLED"] : MAIN_FLOW;
+  // A cancelled job shows only the stages it actually visited (from the audit timeline,
+  // chronological), ending at CANCELLED — never invented repair stages.
+  const visited = timeline.reduce<JobStatus[]>((acc, entry) => {
+    if (!acc.includes(entry.status)) acc.push(entry.status);
+    return acc;
+  }, []);
+  const steps: JobStatus[] = cancelled
+    ? visited.length > 0
+      ? visited
+      : ["RECEIVED", "CANCELLED"]
+    : MAIN_FLOW;
   const currentIndex = cancelled ? steps.length - 1 : MAIN_FLOW.indexOf(status);
   return (
     <ol className="vstep">

@@ -39,7 +39,7 @@ export async function submitQuote(
       const total = computeQuoteTotals(parsed.data.lines);
       if (total.total > 2147483647)
         throw new DomainError("จำนวนเงินไม่ถูกต้อง");
-      await tx.quote.create({
+      const quote = await tx.quote.create({
         data: {
           jobId: id,
           version,
@@ -57,6 +57,8 @@ export async function submitQuote(
       return {
         data: { diagnosis: parsed.data.diagnosis },
         after: { quoteVersion: version, total: total.total },
+        entityType: "Quote" as const,
+        entityId: quote.id,
       };
     },
   );
@@ -91,6 +93,8 @@ export async function decideQuote(
           quoteVersion: quote.version,
           ...(fresh.kind === "USER" ? { onBehalfOfCustomer: true } : {}),
         },
+        entityType: "Quote" as const,
+        entityId: quote.id,
       };
     },
   );

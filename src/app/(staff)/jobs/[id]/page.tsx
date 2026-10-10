@@ -6,6 +6,7 @@ import { getJobDetail } from "@/server/job-service";
 import { buildWorkflowContext } from "@/server/workflow-service";
 import { canViewJob, canAssign, uploadableStages } from "@/domain/permissions";
 import { CATEGORY_LABEL, IDENTIFIER_LABEL } from "@/domain/labels";
+import { formatTHB } from "@/domain/money";
 import { StatusBadge, Stepper, formatDate } from "@/components/job-ui";
 import { Assignment } from "@/components/assignment";
 import { JobActions } from "@/components/job-actions";
@@ -119,10 +120,7 @@ export default async function Job({
               <h3>การชำระเงิน</h3>
               <p>
                 {job.payment.kind === "REPAIR" ? "ค่าซ่อม" : "ค่าตรวจเช็ค"} —{" "}
-                {(job.payment.amount / 100).toLocaleString("th-TH", {
-                  style: "currency",
-                  currency: "THB",
-                })}
+                {formatTHB(job.payment.amount)}
               </p>
               <p>
                 ผู้รับเงิน {job.payment.receivedBy.name} ·{" "}

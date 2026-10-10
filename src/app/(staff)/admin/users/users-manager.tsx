@@ -4,13 +4,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { UserPlus } from "lucide-react";
 import type { Role } from "@/generated/prisma/enums";
+import { ROLE_LABEL } from "@/domain/labels";
 import { createUserAction, updateUserAction } from "./actions";
 
-const ROLE_LABEL: Record<Role, string> = {
-  ADMIN: "ผู้ดูแลระบบ",
-  FRONT_DESK: "หน้าร้าน",
-  TECHNICIAN: "ช่าง",
-};
 const ROLE_ORDER: readonly Role[] = ["ADMIN", "FRONT_DESK", "TECHNICIAN"];
 const EMAIL_RE = /^\S+@\S+\.\S+$/;
 

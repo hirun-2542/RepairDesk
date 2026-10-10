@@ -55,13 +55,26 @@ export function Stepper({ status }: { status: JobStatus }) {
     </ol>
   );
 }
+const dateFormat = new Intl.DateTimeFormat("th-TH", {
+  timeZone: "Asia/Bangkok",
+  day: "numeric",
+  month: "short",
+  year: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 export function formatDate(date: Date | string) {
-  return new Intl.DateTimeFormat("th-TH", {
-    timeZone: "Asia/Bangkok",
-    day: "numeric",
-    month: "short",
-    year: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(date));
+  return dateFormat.format(typeof date === "string" ? new Date(date) : date);
+}
+
+const relativeAge = new Intl.RelativeTimeFormat("th-TH", { numeric: "auto" });
+
+/** Short "how long ago" age for board cards; pair with formatDate in a title attribute. */
+export function formatRelativeAge(date: Date | string) {
+  const minutes = Math.round((Date.now() - new Date(date).getTime()) / 60000);
+  if (Math.abs(minutes) < 60) return relativeAge.format(-minutes, "minute");
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 24) return relativeAge.format(-hours, "hour");
+  return relativeAge.format(-Math.round(hours / 24), "day");
 }

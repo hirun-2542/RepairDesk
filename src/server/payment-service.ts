@@ -26,7 +26,7 @@ export async function completeJob(
       !job.attachments.some((file) => file.stage === "PAYMENT_SLIP")
     )
       throw new DomainError("กรุณาแนบสลิปการโอนก่อน");
-    await tx.payment.create({
+    const payment = await tx.payment.create({
       data: {
         jobId: id,
         kind: "REPAIR",
@@ -36,7 +36,11 @@ export async function completeJob(
         receivedById: fresh.id,
       },
     });
-    return { after: { method: parsed.data.method, amount: quote.total } };
+    return {
+      after: { method: parsed.data.method, amount: quote.total },
+      entityType: "Payment" as const,
+      entityId: payment.id,
+    };
   });
 }
 export const cancelSchema = z
