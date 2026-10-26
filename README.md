@@ -121,15 +121,13 @@ flowchart TB
   Next["Next.js 16 App Router"]
   Domain["src/domain — กฎธุรกิจล้วน"]
   Server["src/server — service + audit"]
-  Prisma["Prisma 7 · better-sqlite3"]
-  DB[("SQLite")]
+  DB[("SQLite · Prisma 7")]
   Files[("uploads/ นอก public")]
 
   Users --> Next
   Next --> Domain
   Next --> Server
-  Server --> Prisma
-  Prisma --> DB
+  Server --> DB
   Server --> Files
 ```
 
