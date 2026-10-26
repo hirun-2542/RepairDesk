@@ -117,20 +117,17 @@ UI ภาษาไทยทั้งหมด mobile-first สไตล์ Clari
 
 ```mermaid
 flowchart TB
-  Staff["พนักงาน · หน้าร้าน / ช่าง / ผู้ดูแลระบบ"]
-  Customer["ลูกค้า · ลิงก์ติดตาม"]
+  Users["พนักงาน + ลิงก์ลูกค้า"]
   Next["Next.js 16 App Router"]
-  Domain["src/domain — กฎ workflow, เงิน, สิทธิ์"]
-  Server["src/server — service ที่เขียนฐานข้อมูล"]
-  Prisma["Prisma 7 + better-sqlite3 adapter"]
+  Domain["src/domain — กฎธุรกิจล้วน"]
+  Server["src/server — service + audit"]
+  Prisma["Prisma 7 · better-sqlite3"]
   DB[("SQLite")]
-  Files[("uploads/ — ไฟล์แนบนอก public")]
+  Files[("uploads/ นอก public")]
 
-  Staff --> Next
-  Customer --> Next
-  Next --> Server
+  Users --> Next
   Next --> Domain
-  Server --> Domain
+  Next --> Server
   Server --> Prisma
   Prisma --> DB
   Server --> Files
