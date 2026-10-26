@@ -99,13 +99,17 @@ UI ภาษาไทยทั้งหมด mobile-first สไตล์ Clari
 
 ### หน้าร้านและผู้ดูแลระบบ
 
-| รับงานใหม่ | รายการงาน | จัดการผู้ใช้ |
-|---|---|---|
-| <img src="docs/screenshots/05-intake.png" width="290" alt="ฟอร์มรับงานใหม่"> | <img src="docs/screenshots/04-job-list.png" width="290" alt="รายการงานพร้อมตัวกรอง"> | <img src="docs/screenshots/10-users.png" width="290" alt="หน้าจัดการผู้ใช้"> |
+| รับงานใหม่ | รายการงาน |
+|---|---|
+| <img src="docs/screenshots/05-intake.png" width="420" alt="ฟอร์มรับงานใหม่"> | <img src="docs/screenshots/04-job-list.png" width="420" alt="รายการงานพร้อมตัวกรอง"> |
 
-| เข้าสู่ระบบ | Audit Log | ใบรับงาน / ใบเสร็จ |
-|---|---|---|
-| <img src="docs/screenshots/01-login.png" width="290" alt="หน้าเข้าสู่ระบบพร้อมปุ่ม Demo login"> | <img src="docs/screenshots/09-audit.png" width="290" alt="Audit Log พร้อมตัวกรอง"> | <img src="docs/screenshots/08-receipt.png" width="290" alt="ใบรับงานและใบเสร็จรับเงิน"> |
+| จัดการผู้ใช้ | Audit Log |
+|---|---|
+| <img src="docs/screenshots/10-users.png" width="420" alt="หน้าจัดการผู้ใช้"> | <img src="docs/screenshots/09-audit.png" width="420" alt="Audit Log พร้อมตัวกรอง"> |
+
+| เข้าสู่ระบบ | ใบรับงาน / ใบเสร็จ |
+|---|---|
+| <img src="docs/screenshots/01-login.png" width="420" alt="หน้าเข้าสู่ระบบพร้อมปุ่ม Demo login"> | <img src="docs/screenshots/08-receipt.png" width="420" alt="ใบรับงานและใบเสร็จรับเงิน"> |
 
 <img src="docs/screenshots/03-board-technician.png" width="900" alt="กระดานงานของช่าง เห็นเฉพาะงานที่ได้รับมอบหมาย">
 
